@@ -39,6 +39,30 @@ class DashboardController:
 
         return None
 
+    def _status_und_note_pruefen(self,status: ModulStatus,note: float | None) -> None:
+        if note is None:
+            return
+
+        if status == ModulStatus.BESTANDEN:
+            if note > 4.0:
+                raise ValueError(
+                    "Bei bestandenen Modulen darf die Note "
+                    "höchstens 4.0 sein."
+                )
+
+        elif status == ModulStatus.NICHT_BESTANDEN:
+            if note != 5.0:
+                raise ValueError(
+                    "Bei nicht bestandenen Modulen ist "
+                    "nur die Note 5.0 erlaubt."
+                )
+
+        else:
+            raise ValueError(
+                "Eine Note kann nur bei bestandenen oder "
+                "nicht bestandenen Modulen eingetragen werden."
+            )
+
     def semester_hinzufuegen(self, nummer: int) -> None:
         neues_semester = Semester(nummer)
         self.aktueller_studiengang.semester_hinzufuegen(neues_semester)
@@ -112,8 +136,7 @@ class DashboardController:
         else:
             neue_note = None
 
-        if neue_note is not None and neuer_status != ModulStatus.BESTANDEN:
-            raise ValueError("Eine Note kann nur bei einem bestandenen Modul eingetragen werden.")
+        self._status_und_note_pruefen(neuer_status, neue_note)
 
         if neue_note is not None and not pruefungsart:
             raise ValueError("Für eine Note muss eine Prüfungsart ausgewählt werden.")
@@ -177,8 +200,7 @@ class DashboardController:
         else:
             note_wert = None
 
-        if note_wert is not None and status_wert != ModulStatus.BESTANDEN:
-            raise ValueError("Eine Note kann nur bei einem bestandenen Modul eingetragen werden.")
+        self._status_und_note_pruefen(status_wert, note_wert)
 
         if note_wert is not None and not neue_pruefungsart:
             raise ValueError("Für eine Note muss eine Prüfungsart ausgewählt werden.")

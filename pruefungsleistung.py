@@ -33,9 +33,7 @@ class Pruefungsleistung:
                 raise ValueError("Die Note muss eine Zahl sein.")
 
             if not 1.0 <= neue_note <= 5.0:
-                raise ValueError(
-                    "Die Note muss zwischen 1.0 und 5.0 liegen."
-                )
+                raise ValueError("Die Note muss zwischen 1.0 und 5.0 liegen.")
 
         self._note = neue_note
 

@@ -16,18 +16,22 @@ class StudienfortschrittService:
         return erreichte_ects
 
     def berechne_notendurchschnitt(self, aktueller_studiengang: Studiengang) -> float | None:
-        noten: list[float] = []
+        gewichtete_notensumme = 0.0
+        benotete_ects = 0
 
         for aktuelles_semester in aktueller_studiengang.semester:
             for aktuelles_modul in aktuelles_semester.module:
-                if aktuelles_modul.pruefungsleistung is not None:
-                    if aktuelles_modul.pruefungsleistung.note is not None:
-                        noten.append(aktuelles_modul.pruefungsleistung.note)
+                if aktuelles_modul.status == ModulStatus.BESTANDEN:
+                    if aktuelles_modul.pruefungsleistung is not None:
+                        if aktuelles_modul.pruefungsleistung.note is not None:
+                            gewichtete_notensumme += (aktuelles_modul.pruefungsleistung.note* aktuelles_modul.ects)
 
-        if not noten:
+                            benotete_ects += aktuelles_modul.ects
+
+        if benotete_ects == 0:
             return None
 
-        return sum(noten) / len(noten)
+        return gewichtete_notensumme / benotete_ects
 
     def berechne_ects_fortschritt(self, aktueller_studiengang: Studiengang) -> float:
         erreichte_ects = self.berechne_erreichte_ects(aktueller_studiengang)

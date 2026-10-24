@@ -5,3 +5,4 @@ class ModulStatus(Enum):
     IN_BEARBEITUNG = "In Bearbeitung"
     IN_KORREKTUR = "In Korrektur"
     BESTANDEN = "Bestanden"
+    NICHT_BESTANDEN = "Nicht bestanden"
