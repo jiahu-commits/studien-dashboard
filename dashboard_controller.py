@@ -39,30 +39,6 @@ class DashboardController:
 
         return None
 
-    def _status_und_note_pruefen(self,status: ModulStatus,note: float | None) -> None:
-        if note is None:
-            return
-
-        if status == ModulStatus.BESTANDEN:
-            if note > 4.0:
-                raise ValueError(
-                    "Bei bestandenen Modulen darf die Note "
-                    "höchstens 4.0 sein."
-                )
-
-        elif status == ModulStatus.NICHT_BESTANDEN:
-            if note != 5.0:
-                raise ValueError(
-                    "Bei nicht bestandenen Modulen ist "
-                    "nur die Note 5.0 erlaubt."
-                )
-
-        else:
-            raise ValueError(
-                "Eine Note kann nur bei bestandenen oder "
-                "nicht bestandenen Modulen eingetragen werden."
-            )
-
     def semester_hinzufuegen(self, nummer: int) -> None:
         neues_semester = Semester(nummer)
         self.aktueller_studiengang.semester_hinzufuegen(neues_semester)
@@ -74,23 +50,8 @@ class DashboardController:
         if gefundenes_semester is None:
             raise ValueError("Dieses Semester existiert nicht.")
 
-        hoechste_nummer = max(
-            semester.nummer
-            for semester in self.semester_abrufen()
-        )
-
-        if gefundenes_semester.nummer != hoechste_nummer:
-            raise ValueError(
-                "Es kann nur das letzte Semester entfernt werden."
-            )
-
-        if gefundenes_semester.module:
-            raise ValueError(
-                "Dieses Semester enthält noch Module und kann "
-                "deshalb nicht entfernt werden."
-            )
-
         self.aktueller_studiengang.semester_entfernen(gefundenes_semester)
+
         self.repository.speichern(self.aktueller_studiengang,self.dateipfad)
 
     def modul_hinzufuegen(
@@ -107,14 +68,6 @@ class DashboardController:
 
         if gefundenes_semester is None:
             return
-
-        if not name.strip():
-            raise ValueError("Bitte gib einen Modulnamen ein.")
-
-        bereits_vorhandenes_modul = self._finde_modul( semester_nummer,name)
-
-        if bereits_vorhandenes_modul is not None:
-            raise ValueError ("Dieses Modul existiert in diesem Semester bereits.")
 
         if not ects:
             raise ValueError("Bitte wähle die ECTS aus.")
@@ -135,8 +88,6 @@ class DashboardController:
 
         else:
             neue_note = None
-
-        self._status_und_note_pruefen(neuer_status, neue_note)
 
         if neue_note is not None and not pruefungsart:
             raise ValueError("Für eine Note muss eine Prüfungsart ausgewählt werden.")
@@ -200,8 +151,6 @@ class DashboardController:
         else:
             note_wert = None
 
-        self._status_und_note_pruefen(status_wert, note_wert)
-
         if note_wert is not None and not neue_pruefungsart:
             raise ValueError("Für eine Note muss eine Prüfungsart ausgewählt werden.")
 
@@ -215,8 +164,7 @@ class DashboardController:
         else:
             neue_pruefungsleistung = None
 
-        gefundenes_modul.status = status_wert
-        gefundenes_modul.pruefungsleistung = neue_pruefungsleistung
+        gefundenes_modul.pruefungsdaten_aendern(status_wert,neue_pruefungsleistung)
 
         self.repository.speichern(self.aktueller_studiengang,self.dateipfad)
 
