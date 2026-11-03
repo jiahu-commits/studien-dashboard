@@ -7,6 +7,10 @@ from dashboard_controller import DashboardController
 
 class DashboardView:
 
+    """Zeigt das Dashboard und nimmt Benutzereingaben entgegen.
+    Die Erstell-Methoden bauen die Widgets einmalig auf. Aktualisierungen
+    befüllen vorhandene Anzeigen. Fachliche Aktionen gehen an den Controller.
+    """
     def __init__(self, controller: DashboardController) -> None:
         self.controller = controller
 
@@ -319,6 +323,10 @@ class DashboardView:
         )
 
     def dashboard_aktualisieren(self) -> None:
+        """Befüllt die vorhandenen Kennzahlenanzeigen mit aktuellen Controller-Daten.
+        Ein fehlender Notendurchschnitt wird als noch nicht verfügbar dargestellt.
+        Die Modultabelle wird separat über modultabelle_aktualisieren befüllt.
+        """
         kennzahlen = self.controller.kennzahlen_abrufen()
 
         self.fortschritt_text.config(
@@ -397,6 +405,7 @@ class DashboardView:
 
 
     def ausgewaehltes_semester_finden(self):
+        """Ermittelt das Semester zur aktuellen Combobox-Auswahl oder gibt None zurück."""
         for semester in self.controller.semester_abrufen():
             if self.semester_auswahl.get() == f"Semester {semester.nummer}":
                 return semester
@@ -619,6 +628,10 @@ class DashboardView:
         self.modultabelle_aktualisieren()
 
     def modultabelle_aktualisieren(self, ereignis=None) -> None:
+        """Zeigt ausschliesslich die Module des ausgewählten Semesters.
+        Fehlende Prüfungsart und Note bleiben leer. Der optionale Ereignisparameter
+        ermöglicht den Aufruf durch die Combobox und wird hier nicht ausgewertet.
+        """
         for zeile in self.modul_tabelle.get_children():
             self.modul_tabelle.delete(zeile)
 
@@ -654,6 +667,9 @@ class DashboardView:
             )
 
     def semester_hinzufuegen(self) -> None:
+        """Verwendet die höchste vorhandene Semesternummer plus eins.
+        Danach werden die Auswahl und die Modultabelle aktualisiert.
+        """
         neue_nummer = 1
 
         for semester in self.controller.semester_abrufen():
@@ -674,6 +690,10 @@ class DashboardView:
         self.modultabelle_aktualisieren()
 
     def semester_entfernen(self) -> None:
+        """Entfernt das ausgewählte Semester über den Controller.
+        Eine abgelehnte Löschung wird als Meldung angezeigt. Bei Erfolg wird
+        die Auswahl angepasst und die Modultabelle aktualisiert.
+        """
         ausgewaehltes_semester = self.ausgewaehltes_semester_finden()
 
         if ausgewaehltes_semester is None:
@@ -710,6 +730,10 @@ class DashboardView:
         self.modultabelle_aktualisieren()
 
     def modul_hinzufuegen(self) -> None:
+        """Öffnet ein Eingabefenster zum Anlegen eines Moduls im gewählten Semester.
+        Beim Speichern werden Eingabefehler angezeigt oder Tabelle und Kennzahlen
+        aktualisiert. Das Fenster wird nur nach erfolgreichem Speichern geschlossen.
+        """
         ausgewaehltes_semester = self.ausgewaehltes_semester_finden()
 
         if ausgewaehltes_semester is None:
@@ -878,6 +902,10 @@ class DashboardView:
         )
 
     def modul_bearbeiten(self, ereignis=None) -> None:
+        """Öffnet beim Doppelklick die Prüfungsdaten der ausgewählten Tabellenzeile.
+        Prüfungsart, Status und Note können geändert werden. Bei einem ValueError
+        bleibt das Fenster offen, damit die Eingabe korrigiert werden kann.
+        """
         ausgewaehlte_zeile = self.modul_tabelle.selection()
 
         if not ausgewaehlte_zeile:
@@ -1026,6 +1054,9 @@ class DashboardView:
         )
 
     def ausgewaehltes_modul_entfernen(self) -> None:
+        """Fragt vor dem Entfernen des ausgewählten Moduls nach einer Bestätigung.
+        Nach erfolgreichem Löschen werden Tabelle und Kennzahlen aktualisiert.
+        """
         ausgewaehlte_zeile = self.modul_tabelle.selection()
 
         if not ausgewaehlte_zeile:

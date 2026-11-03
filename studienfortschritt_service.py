@@ -5,7 +5,11 @@ from modul_status import ModulStatus
 
 class StudienfortschrittService:
 
+    """Berechnet die Kennzahlen aus den vorhandenen Studiendaten.
+    Die Berechnungen verändern und speichern keine Daten.
+    """
     def berechne_erreichte_ects(self, aktueller_studiengang: Studiengang) -> int:
+        """Zählt die ECTS aller bestandenen Module, auch wenn keine Note vorhanden ist."""
         erreichte_ects = 0
 
         for aktuelles_semester in aktueller_studiengang.semester:
@@ -16,6 +20,11 @@ class StudienfortschrittService:
         return erreichte_ects
 
     def berechne_notendurchschnitt(self, aktueller_studiengang: Studiengang) -> float | None:
+        """Berechnet den nach ECTS gewichteten Durchschnitt bestandener Module mit Note.
+        Dazu wird die Summe aus Note mal ECTS durch die ECTS-Summe dieser Module
+        geteilt. Ein Modul mit 10 ECTS zählt doppelt so stark wie eines mit 5 ECTS.
+        Ohne berücksichtigte Noten wird None zurückgegeben.
+        """
         gewichtete_notensumme = 0.0
         benotete_ects = 0
 
@@ -42,6 +51,9 @@ class StudienfortschrittService:
         return erreichte_ects / aktueller_studiengang.gesamt_ects * 100
 
     def berechne_vergangene_monate(self, aktueller_studiengang: Studiengang) -> int:
+        """Berechnet die vergangenen vollen Monate seit dem Startdatum.
+        Ist der Starttag im aktuellen Monat noch nicht erreicht, wird ein Monat abgezogen.
+        """
         heutiges_datum = date.today()
         vergangene_monate = (heutiges_datum.year - aktueller_studiengang.startdatum.year) * 12
         vergangene_monate += heutiges_datum.month - aktueller_studiengang.startdatum.month
@@ -60,6 +72,9 @@ class StudienfortschrittService:
         return vergangene_monate / aktueller_studiengang.studiendauer_monate * 100
 
     def berechne_soll_ects(self, aktueller_studiengang: Studiengang) -> float:
+        """Verteilt die Gesamt-ECTS gleichmässig auf die geplante Studiendauer.
+        Die vergangenen vollen Monate bestimmen den erwarteten ECTS-Stand.
+        """
         vergangene_monate = self.berechne_vergangene_monate(aktueller_studiengang)
 
         if aktueller_studiengang.studiendauer_monate == 0:
@@ -73,12 +88,19 @@ class StudienfortschrittService:
         return soll_ects
 
     def berechne_soll_ist_abweichung(self, aktueller_studiengang: Studiengang) -> float:
+        """Berechnet erreichte ECTS minus Soll-ECTS.
+        Ein positiver Wert bedeutet, dass mehr ECTS als zeitlich vorgesehen erreicht sind.
+        """
         ist_ects = self.berechne_erreichte_ects(aktueller_studiengang)
         soll_ects = self.berechne_soll_ects(aktueller_studiengang)
 
         return ist_ects - soll_ects
 
     def berechne_notenabweichung(self, aktueller_studiengang: Studiengang) -> float | None:
+        """Berechnet Zielnote minus Notendurchschnitt.
+        Ein positiver Wert bedeutet einen besseren Durchschnitt als das Ziel.
+        Ohne Notendurchschnitt wird None zurückgegeben.
+        """
         notendurchschnitt = self.berechne_notendurchschnitt(aktueller_studiengang)
 
         if notendurchschnitt is None:

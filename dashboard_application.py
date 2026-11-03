@@ -6,7 +6,11 @@ from dashboard_view import DashboardView
 
 
 class DashboardApplication:
+    """Erstellt und verbindet Service, Repository, Controller und View."""
     def __init__(self, aktueller_studiengang: Studiengang) -> None:
+        """Lädt vorhandene Studiendaten vor dem Erstellen des Controllers.
+        Fehlt die Datei, wird der übergebene Studiengang verwendet.
+        """
         self.service = StudienfortschrittService()
         self.repository = JsonRepository()
 

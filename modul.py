@@ -4,12 +4,14 @@ from modul_status import ModulStatus
 
 @dataclass
 class Modul:
+    """Enthält die Daten eines Moduls und prüft die Kombination aus Status und Note."""
     name: str
     ects: int
     _status: ModulStatus
     pruefungsleistung: Pruefungsleistung | None = None
 
     def __post_init__(self) -> None:
+        """Prüft den Namen und den anfänglichen Status mit der Prüfungsleistung."""
         if not self.name.strip():
             raise ValueError(
                 "Bitte gib einen Modulnamen ein."
@@ -23,6 +25,7 @@ class Modul:
 
     @status.setter
     def status(self, neuer_status: ModulStatus) -> None:
+        """Prüft einen neuen Status zusammen mit der vorhandenen Prüfungsleistung."""
         self._status_und_note_pruefen(
             neuer_status,
             self.pruefungsleistung
@@ -35,6 +38,11 @@ class Modul:
             neuer_status: ModulStatus,
             neue_pruefungsleistung: Pruefungsleistung | None
     ) -> None:
+        """Prüft die neue Kombination vor der Übernahme beider Werte.
+        So kann beispielsweise eine nicht bestandene Prüfung mit Note 5.0
+        gemeinsam auf Bestanden mit einer passenden neuen Note geändert werden.
+        Bei einer ungültigen Kombination bleiben die bisherigen Werte erhalten.
+        """
         self._status_und_note_pruefen(
             neuer_status,
             neue_pruefungsleistung
@@ -48,6 +56,11 @@ class Modul:
             status: ModulStatus,
             pruefungsleistung: Pruefungsleistung | None
     ) -> None:
+        """Erlaubt fehlende Noten bei allen gültigen Statuswerten.
+        Vorhandene Noten dürfen bei Bestanden höchstens 4.0 sein; bei Nicht bestanden
+        ist nur 5.0 erlaubt. Andere Statuswerte erlauben keine Note. Den allgemeinen
+        Notenbereich prüft bereits die Klasse Pruefungsleistung.
+        """
         if not isinstance(status, ModulStatus):
             raise ValueError("Ungültiger Modulstatus")
 

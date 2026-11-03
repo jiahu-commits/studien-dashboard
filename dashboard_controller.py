@@ -8,6 +8,10 @@ from studienfortschritt_service import StudienfortschrittService
 from json_repository import JsonRepository
 
 class DashboardController:
+    """Verarbeitet die Eingaben der View und koordiniert die Aktionen.
+    Die fachlichen Klassen prüfen die Regeln. Änderungen werden danach gespeichert.
+    Der Dateipfad bezieht sich standardmässig auf das aktuelle Arbeitsverzeichnis.
+    """
     def __init__(
             self,
             aktueller_studiengang: Studiengang,
@@ -21,6 +25,7 @@ class DashboardController:
         self.dateipfad = dateipfad
 
     def _finde_semester(self, semester_nummer: int) -> Semester | None:
+        """Sucht ein Semester anhand seiner Nummer oder gibt None zurück."""
         for aktuelles_semester in self.aktueller_studiengang.semester:
             if aktuelles_semester.nummer == semester_nummer:
                 return aktuelles_semester
@@ -28,6 +33,7 @@ class DashboardController:
         return None
 
     def _finde_modul(self, semester_nummer: int, modul_name: str) -> Modul | None:
+        """Sucht ein Modul anhand von Semester und Name oder gibt None zurück."""
         gefundenes_semester = self._finde_semester(semester_nummer)
 
         if gefundenes_semester is None:
@@ -40,11 +46,13 @@ class DashboardController:
         return None
 
     def semester_hinzufuegen(self, nummer: int) -> None:
+        """Erstellt ein Semester, fügt es dem Studiengang hinzu und speichert."""
         neues_semester = Semester(nummer)
         self.aktueller_studiengang.semester_hinzufuegen(neues_semester)
         self.repository.speichern(self.aktueller_studiengang, self.dateipfad)
 
     def semester_entfernen(self, semester_nummer: int) -> None:
+        """Lässt den Studiengang die Löschregeln prüfen und speichert danach."""
         gefundenes_semester = self._finde_semester(semester_nummer)
 
         if gefundenes_semester is None:
@@ -64,6 +72,11 @@ class DashboardController:
             note: str
     ) -> None:
 
+        """Wandelt Formulareingaben in Zahlen und Enum-Werte um.
+        Eine leere Note wird als None übernommen. Bei gewählter Prüfungsart wird
+        eine Prüfungsleistung erstellt. Modul und Semester prüfen die Fachregeln.
+        ValueError wird zur Anzeige der Fehlermeldung an die View weitergegeben.
+        """
         gefundenes_semester = self._finde_semester(semester_nummer)
 
         if gefundenes_semester is None:
@@ -113,6 +126,7 @@ class DashboardController:
         self.repository.speichern(self.aktueller_studiengang,self.dateipfad)
 
     def modul_entfernen(self, semester_nummer: int, modul_name: str) -> None:
+        """Entfernt das gefundene Modul aus dem Semester und speichert."""
         gefundenes_semester = self._finde_semester(semester_nummer)
 
         if gefundenes_semester is None:
@@ -135,6 +149,10 @@ class DashboardController:
             neue_note: str
     ) -> None:
 
+        """Bereitet die neuen Prüfungsdaten aus dem Bearbeitungsfenster auf.
+        Das Modul prüft Status und Prüfungsleistung gemeinsam, bevor es sie übernimmt.
+        Nur bei erfolgreicher Änderung wird gespeichert.
+        """
         gefundenes_modul = self._finde_modul(semester_nummer,modul_name)
 
         if gefundenes_modul is None:
@@ -180,6 +198,9 @@ class DashboardController:
         return gefundenes_semester.module
 
     def kennzahlen_abrufen(self) -> dict:
+        """Fragt die berechneten Kennzahlen beim Service ab.
+        Die View erhält die Ergebnisse und die zugehörigen Zielwerte als Dictionary.
+        """
         erreichte_ects = self.service.berechne_erreichte_ects(self.aktueller_studiengang)
         ects_fortschritt = self.service.berechne_ects_fortschritt(self.aktueller_studiengang)
         notendurchschnitt = self.service.berechne_notendurchschnitt(self.aktueller_studiengang)

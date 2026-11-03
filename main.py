@@ -1,5 +1,7 @@
+"""Startet das Studien-Dashboard mit den voreingestellten Studiendaten.
+Vorhandene JSON-Daten werden beim Aufbau der Anwendung geladen.
+"""
 from datetime import date
-
 from studiengang import Studiengang
 from dashboard_application import DashboardApplication
 

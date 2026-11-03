@@ -9,7 +9,12 @@ from modul_status import ModulStatus
 from pruefungsart import Pruefungsart
 
 class JsonRepository:
+    """Speichert den Studiengang als JSON und baut ihn beim Laden wieder auf."""
     def speichern(self, aktueller_studiengang: Studiengang, dateipfad: str) -> None:
+        """Überführt Studiengang, Semester, Module und Prüfungsleistungen in JSON-Daten.
+        Das Datum wird im ISO-Format und Enums werden mit ihren Anzeigewerten
+        gespeichert. Fehlende Prüfungsleistungen und Noten werden zu JSON-null.
+        """
         daten = {
             "name": aktueller_studiengang.name,
             "startdatum": aktueller_studiengang.startdatum.isoformat(),
@@ -57,6 +62,10 @@ class JsonRepository:
 
 
     def laden(self, dateipfad: str) -> Studiengang:
+        """Erstellt die fachlichen Objekte aus den gespeicherten JSON-Daten.
+        Dabei werden Datum und Enum-Werte zurückgewandelt und die Prüfungen
+        der verwendeten Konstruktoren und Hinzufüge-Methoden ausgeführt.
+        """
         with open(dateipfad, "r", encoding="utf-8") as datei:
             daten = json.load(datei)
         geladener_studiengang = Studiengang(
